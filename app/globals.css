@@ -119,3 +119,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes bgScroll {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: -1000px;
+  }
+}

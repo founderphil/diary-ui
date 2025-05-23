@@ -3,11 +3,14 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import BackgroundAnimation from "@/components/ui/backgroundAnimation";
+import WaveCanvas from "@/components/ui/WaveCanvas";
 import { sendChat, getTasks } from "../lib/api";
 
 export default function DiaryHome() {
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [input, setInput] = useState("");
+  const [isThinking, setIsThinking] = useState(false)
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   const sendMessage = async () => {
@@ -15,6 +18,7 @@ export default function DiaryHome() {
     const userMsg = { role: "user" as const, content: input };
     setMessages((m) => [...m, userMsg]);
     setInput("");
+    setIsThinking(true);
 
     try {
       const reply = await sendChat(userMsg.content);
@@ -25,6 +29,8 @@ export default function DiaryHome() {
         ...m,
         { role: "assistant", content: "⚠️ Something went wrong." },
       ]);
+    } finally {
+      setIsThinking(false);
     }
   };
 
@@ -49,9 +55,12 @@ export default function DiaryHome() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4 gap-6">
-      {/* Chat */}
-      <Card className="w-full max-w-2xl flex flex-col flex-1 overflow-hidden">
+    <div className="relative min-h-screen bg-zinc-50 dark:bg-zinc-900 flex flex-col items-center p-4 gap-6 overflow-hidden">
+      <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-0">
+        <WaveCanvas isThinking={isThinking} height={1000} />
+      </div>
+      
+      <Card className="relative z-10 w-full max-w-2xl flex flex-col flex-1 overflow-hidden">
         <CardContent className="flex flex-col flex-1 overflow-y-auto space-y-3 p-4">
           {messages.map((m, i) => (
             <div key={i} className={`rounded-xl p-3 max-w-prose ${m.role === "user" ? "self-end bg-indigo-100" : "self-start bg-white"}`}>{m.content}</div>
@@ -75,8 +84,7 @@ export default function DiaryHome() {
         </form>
       </Card>
 
-      {/* Tasks */}
-      <Card className="w-full max-w-4xl">
+      <Card className="relative z-10 w-full max-w-4xl">
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-100 text-left">
@@ -108,5 +116,6 @@ export default function DiaryHome() {
         </CardContent>
       </Card>
     </div>
+    
   );
 }
