@@ -3,9 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { sendChat, getTasks } from "../lib/api";
 
 export default function DiaryHome() {
-  // Chat state ---------------------------------------------------------
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [input, setInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -16,31 +16,32 @@ export default function DiaryHome() {
     setMessages((m) => [...m, userMsg]);
     setInput("");
 
-    /* POST diary turn -------------------------------------------------*/
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: userMsg.content }),
-    });
-    if (!res.ok) {
-      setMessages((m) => [...m, { role: "assistant", content: "⚠️ Something went wrong." }]);
-      return;
+    try {
+      const reply = await sendChat(userMsg.content);
+      setMessages((m) => [...m, { role: "assistant", content: reply }]);
+    } catch (err) {
+      console.error(err);
+      setMessages((m) => [
+        ...m,
+        { role: "assistant", content: "⚠️ Something went wrong." },
+      ]);
     }
-    const data = await res.json(); // { reply: string }
-    setMessages((m) => [...m, { role: "assistant", content: data.reply }]);
   };
 
-  // Auto‑scroll chat ---------------------------------------------------
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Task ledger polling -----------------------------------------------
+  // Task ledger
   const [tasks, setTasks] = useState<any[]>([]);
   useEffect(() => {
     const fetchTasks = async () => {
-      const r = await fetch("/api/tasks");
-      if (r.ok) setTasks(await r.json());
+      try {
+        const data = await getTasks();
+        setTasks(data);
+      } catch (err) {
+        console.error("task polling error", err);
+      }
     };
     fetchTasks();
     const id = setInterval(fetchTasks, 5000);
@@ -49,7 +50,7 @@ export default function DiaryHome() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4 gap-6">
-      {/* Chat ----------------------------------------------------------------*/}
+      {/* Chat */}
       <Card className="w-full max-w-2xl flex flex-col flex-1 overflow-hidden">
         <CardContent className="flex flex-col flex-1 overflow-y-auto space-y-3 p-4">
           {messages.map((m, i) => (
@@ -74,7 +75,7 @@ export default function DiaryHome() {
         </form>
       </Card>
 
-      {/* Task ledger --------------------------------------------------------*/}
+      {/* Tasks */}
       <Card className="w-full max-w-4xl">
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-sm">
