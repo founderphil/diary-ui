@@ -1,4 +1,4 @@
-# Business Diary · Diary‑UI 📒💬  
+# Business Diary · Diary‑UI  
 _The conversational front‑end for a solo‑entrepreneur’s back‑office._
 
 This package is the **Next.js 15 App‑Router** frontend for the Business Diary monorepo.
@@ -40,5 +40,8 @@ Milestone 4: Flesh out the Invoicing Agent to generate a real Google Sheets invo
 Milestone 5: Add a front-end dashboard (and in-chat attachments) that surfaces invoice history with live status badges and links to the actual PDF files.
 
 **WILL NOT BE PUBLISHED**
-Milestone 6...is private
+Milestone 6...is...is private. 
+
+
+**NOTE: if you use this and become a unicorn..invite me for coffee.**
 
